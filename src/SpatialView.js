@@ -159,7 +159,7 @@ function SpatialView() {
 
     const rotateModel = () => {
 
-      if(document.visibilityState === "visible") {
+      if(!document.hidden) {
         targetRotation += Math.PI / 2
       }
 
