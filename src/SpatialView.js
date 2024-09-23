@@ -13,6 +13,26 @@ function SpatialView() {
     const scene = new THREE.Scene();
 
     /**
+     * Points Of Interest
+     */
+
+    const raycaster = new THREE.Raycaster();
+    const pointsOfInterest = [
+      {
+        position: new THREE.Vector3(0, 0.065, 0),
+        element: document.querySelector('#point-1')
+      },
+      {
+        position: new THREE.Vector3(-0.025, 0.03, 0),
+        element: document.querySelector('#point-2')
+      },
+      {
+        position: new THREE.Vector3(0.025, 0.03, 0),
+        element: document.querySelector('#point-3')
+      }
+    ]
+
+    /**
      * Models
      */
     let model;
@@ -27,6 +47,20 @@ function SpatialView() {
         console.log("success");
         model.position.set(-0.05, -0.03, 0)
         scene.add(model);
+
+
+        pointsOfInterest.forEach((point, index) => {
+          const sphereGeometry = new THREE.SphereGeometry(0, 32, 32);
+          const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+          const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+          // Set the position relative to the model
+          sphere.position.set(point.position.x, point.position.y, point.position.z);
+          
+          // Attach the sphere to the model, so it moves with it
+          model.add(sphere);
+          pointsOfInterest[index].object = sphere
+        });
       },
       () => {
         // console.log("progress");
@@ -35,6 +69,8 @@ function SpatialView() {
         console.log("error");
       }
     );
+
+    
 
     /**
      * Lights
@@ -148,6 +184,29 @@ function SpatialView() {
 
       // Update controls
       controls.update();
+
+      // Go through each point
+      for( const point of pointsOfInterest ) {
+        if(point.object) {
+          const screenPosition = new THREE.Vector3();
+          point.object.getWorldPosition(screenPosition);
+          screenPosition.project(camera)
+
+          raycaster.setFromCamera(screenPosition, camera);
+          const intersects = raycaster.intersectObjects(scene.children, true)
+          if(true) { //intersects.length == 0
+            //point.element.classList.add("visible")
+            const translateX = screenPosition.x * sizes.width * 0.5
+            const translateY = screenPosition.y * sizes.height * 0.5
+            point.element.style.transform = `translateX(${translateX}px) translateY(${-translateY}px)`
+          } else {
+            //point.element.classList.remove("visible")
+          }
+
+          
+        }
+
+      }
 
       // Render
       renderer.render(scene, camera);
