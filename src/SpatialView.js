@@ -158,7 +158,11 @@ function SpatialView() {
     let targetRotation = 0;
 
     const rotateModel = () => {
-      targetRotation += Math.PI / 2
+
+      if(document.visibilityState === "visible") {
+        targetRotation += Math.PI / 2
+      }
+
       setTimeout(() => {
         rotateModel()
       }, 10000);
@@ -190,17 +194,19 @@ function SpatialView() {
         if(point.object) {
           const screenPosition = new THREE.Vector3();
           point.object.getWorldPosition(screenPosition);
+          const objectWorldPosition = screenPosition.clone();
           screenPosition.project(camera)
 
           raycaster.setFromCamera(screenPosition, camera);
           const intersects = raycaster.intersectObjects(scene.children, true)
-          if(true) { //intersects.length == 0
-            //point.element.classList.add("visible")
+          if(intersects.length == 0 || intersects[0].distance >= objectWorldPosition.distanceTo(camera.position)) {
+            
+            point.element.classList.add("visible")
             const translateX = screenPosition.x * sizes.width * 0.5
             const translateY = screenPosition.y * sizes.height * 0.5
             point.element.style.transform = `translateX(${translateX}px) translateY(${-translateY}px)`
           } else {
-            //point.element.classList.remove("visible")
+            point.element.classList.remove("visible")
           }
 
           
